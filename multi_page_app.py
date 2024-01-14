@@ -6,6 +6,9 @@ from pptx import Presentation
 from pptx.util import Pt as PptPt
 from pptx.dml.color import RGBColor
 import io
+import os
+
+openai.api_key = os.getenv("open_api_key")
 
 # Function to generate lesson plan content
 def generate_lesson_plan(api_key, user_input):
