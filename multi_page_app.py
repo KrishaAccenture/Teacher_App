@@ -156,7 +156,7 @@ def main():
     
 
         with st.spinner('Creating the lesson plan...'):
-            api_key = "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"    # Replace with your actual API key
+            api_key = "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"    # Replace with your actual API key
             lesson_plan = generate_lesson_plan(api_key, user_input)
             st.session_state['lesson_plan_file_stream'] = create_word_document(lesson_plan)
 
