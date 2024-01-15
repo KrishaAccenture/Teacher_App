@@ -29,7 +29,7 @@ Language and Grammar Compliance: All generated content must be in British Englis
 
     Teacher Input: {user_input}"""
     chat_completion = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": detailed_prompt}],
         max_tokens=1000,
         temperature=1.0
@@ -54,7 +54,7 @@ def generate_ppt_slides(lesson_plan):
     prompt = f"""Ensure everything is in english british spelling and grammar. Create detailed content for an effective PowerPoint presentation based on the lesson plan generated in {lesson_plan}. Structure the slides to match the flow of the lesson, from the starter activity to the plenary questions. It has to have detailed and necessary points for each ppt slide, and it needs to have all the conctent for the plan - e.g any quetsiosn to ask the class, any example quetsions, the content for any quick games as part of the slide if included. For any images required on the slide it needs to say Image: and then have a concise description of the image required. This is the rough structure for it, it must have these slides, but if you feel another sections is required, feel free to add that in as well. there can be more than one slide for each section especially around the main teaching slides, create slides keeping in mind fact of the content tailored for mixed ability children, and special needs. Remember you have to actually write the deatiled content for each slides e.g bullet points, explanations, any questiosn for the children to work throguh in the styarter actviity/ main teaching slide etc… anywhere an image is required just put image and put the decription of the image required there as a bullet point. The teacher simply needs to copy and paste this information to a ppt to present. It needs to have all the information to teach the class, including questions to ask the class - everything/ detailed but also concise and to the point, targeted at the age group os kids mentioned in the teacher input previously. The slide titles needs to be based on what the content is and you do not to need to stick to the header of the section given. 1. Title Slide: (take information from the {lesson_plan}) • Content: Lesson title, date, and class • Tips: Keep it simple and clear. • List the criteria for success in this lesson from the lesson_plan • Clearly state the learning objectives. 2. Starter Activity Slide • Content: Brief instructions for the starter activity. • Tips: Include an engaging image or question to capture interest. 3. Main Teaching Slides • Write the key information, explanations, examples. • Tips: Use visuals like diagrams, charts, and minimal text. Break content into digestible chunks. 4. Activity Instructions Slide • Content: Detailed instructions for the activity. • Tips: Include clear steps and expected outcomes. 5. Plenary Questions Slide • Content: Questions or prompts for the plenary. • Tips: Encourage reflection on the lesson's objectives. 6. Key Vocabulary Slide • Content: List of key terms with definitions. • Tips: Use visual aids to associate words with their meanings. 7. Resources Slide • Content: List of resources used. • Tips: Provide links or references for further reading. 8. Closing Slide • Content: summary of the lesson • Tips: End with a positive note or a preview of the next lesson. there can be more than one slide for each section especially around the main teaching slides, create slides keeping in mind fact of the content tailored for mixed ability children, and special needs. Remember you have to actually write the content for each slides, I simply just want to copy and paste this information to a ppt to present. It needs to have all the information to teach the class, including questions to ask the class - everything."""
 
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": "Generate a PowerPoint presentation."},
                   {"role": "user", "content": prompt}],
         max_tokens=1000,
@@ -111,7 +111,7 @@ def generate_activity_sheets(lesson_plan, parsed_ppt_content):
     PowerPoint Content:
     {parsed_ppt_content}"""
     chat_completion = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=1500,
         temperature=0.7
