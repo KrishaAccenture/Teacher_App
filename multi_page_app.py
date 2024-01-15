@@ -9,6 +9,10 @@ import io
 import os
 
 openai.api_key = os.getenv("open_api_key")
+if not api_key:
+    st.error("Failed to retrieve OpenAI API key from environment variables.")
+    st.stop()
+
 
 # Function to generate lesson plan content
 def generate_lesson_plan(api_key, user_input):
