@@ -159,16 +159,16 @@ def main():
 
         with st.spinner('Creating the lesson plan...'):
               
-            lesson_plan = generate_lesson_plan(api_key, user_input)
+            lesson_plan = generate_lesson_plan(user_input)
             st.session_state['lesson_plan_file_stream'] = create_word_document(lesson_plan)
 
         with st.spinner('Generating the PowerPoint...'):
-            ppt_content = generate_ppt_slides(api_key, lesson_plan)
+            ppt_content = generate_ppt_slides(lesson_plan)
             parsed_ppt_content = parse_ppt_content(ppt_content)
             st.session_state['ppt_file_stream'] = create_powerpoint(parsed_ppt_content)
 
         with st.spinner('Creating the activity sheets...'):
-            activity_sheet_content = generate_activity_sheets(api_key, lesson_plan, parsed_ppt_content)
+            activity_sheet_content = generate_activity_sheets(lesson_plan, parsed_ppt_content)
             st.session_state['activity_sheet_file_stream'] = create_word_document(activity_sheet_content)
 
         st.success('All materials ready for download!')
