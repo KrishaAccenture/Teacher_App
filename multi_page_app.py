@@ -8,6 +8,7 @@ from pptx.dml.color import RGBColor
 import io
 import os
 import fitz 
+import requests
 
 openai.api_key = st.secrets["api_key"]
 
@@ -24,17 +25,16 @@ def update_history(user_input, lesson_plan, ppt_content, activity_sheet_content)
         'activity_sheet_content': activity_sheet_content
     })
 
-
 def extract_text_from_pdf_with_fitz(pdf_path):
     text = ''
+    # No need to change directory paths as the file is in the root of the repository
     with fitz.open(pdf_path) as doc:
         for page in doc:
             text += page.get_text() + '\n'
     return text
 
-
-# Extracting text from the UK National Curriculum PDF using PyPDF2
-uk_national_curriculum_content = extract_text_from_pdf_with_fitz("C:\\Users\\krisha.dhanasekaran\\OneDrive - Accenture\\Documents\\SOD\\App\\PRIMARY_national_curriculum.pdf")
+# The path is simply the name of the file since it's in the same directory as the script
+uk_national_curriculum_content = extract_text_from_pdf_with_fitz("PRIMARY_national_curriculum.pdf")
 
 # Function to generate lesson plan content
 def generate_lesson_plan(user_input):
