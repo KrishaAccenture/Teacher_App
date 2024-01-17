@@ -34,7 +34,7 @@ def extract_text_from_pdf_with_fitz(pdf_path):
     return text
 
 # The path is simply the name of the file since it's in the same directory as the script
-uk_national_curriculum_content = extract_text_from_pdf_with_fitz("PRIMARY_national_curriculum.pdf")
+# uk_national_curriculum_content = extract_text_from_pdf_with_fitz("PRIMARY_national_curriculum.pdf")
 
 # Function to generate lesson plan content
 def generate_lesson_plan(user_input):
