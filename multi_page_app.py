@@ -7,12 +7,9 @@ from pptx.util import Pt as PptPt
 from pptx.dml.color import RGBColor
 import io
 import os
-import PyPDF2
-
+import fitz 
 
 openai.api_key = st.secrets["api_key"]
-
-
 
 # Initialize session state variables for history
 if 'history' not in st.session_state:
@@ -27,17 +24,17 @@ def update_history(user_input, lesson_plan, ppt_content, activity_sheet_content)
         'activity_sheet_content': activity_sheet_content
     })
 
-# Function to extract text from a PDF file
-def extract_text_from_pdf_with_pypdf2(pdf_path):
+
+def extract_text_from_pdf_with_fitz(pdf_path):
     text = ''
-    with open(pdf_path, 'rb') as file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        for page in pdf_reader.pages:
-            text += page.extract_text() + '\n'
+    with fitz.open(pdf_path) as doc:
+        for page in doc:
+            text += page.get_text() + '\n'
     return text
 
+
 # Extracting text from the UK National Curriculum PDF using PyPDF2
-uk_national_curriculum_content = extract_text_from_pdf_with_pypdf2("C:\\Users\\krisha.dhanasekaran\\OneDrive - Accenture\\Documents\\SOD\\App\\PRIMARY_national_curriculum.pdf")
+uk_national_curriculum_content = extract_text_from_pdf_with_fitz("C:\\Users\\krisha.dhanasekaran\\OneDrive - Accenture\\Documents\\SOD\\App\\PRIMARY_national_curriculum.pdf")
 
 # Function to generate lesson plan content
 def generate_lesson_plan(user_input):
