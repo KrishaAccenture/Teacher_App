@@ -7,10 +7,12 @@ from pptx.util import Pt as PptPt
 from pptx.dml.color import RGBColor
 import io
 import os
+import PyPDF2
+
 
 openai.api_key = st.secrets["api_key"]
 
-import PyPDF2
+
 
 # Initialize session state variables for history
 if 'history' not in st.session_state:
