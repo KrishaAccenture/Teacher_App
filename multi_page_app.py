@@ -10,10 +10,24 @@ import os
 
 openai.api_key = st.secrets["api_key"]
 
+import PyPDF2
+
+# Function to extract text from a PDF file
+def extract_text_from_pdf_with_pypdf2(pdf_path):
+    text = ''
+    with open(pdf_path, 'rb') as file:
+        pdf_reader = PyPDF2.PdfReader(file)
+        for page in pdf_reader.pages:
+            text += page.extract_text() + '\n'
+    return text
+
+# Extracting text from the UK National Curriculum PDF using PyPDF2
+uk_national_curriculum_content = extract_text_from_pdf_with_pypdf2("C:\\Users\\krisha.dhanasekaran\\OneDrive - Accenture\\Documents\\SOD\\App\\PRIMARY_national_curriculum.pdf")
+
 # Function to generate lesson plan content
 def generate_lesson_plan(user_input):
     detailed_prompt = f"""Utilise the teacher's input from the [Teacher Input] widget to generate educational content, adhering to these detailed requirements:
-Complete Understanding of UK National Curriculum: thoroughly analyze the UK National Curriculum document "The national curriculum in England - Framework document (publishing.service.gov.uk)" to fully grasp the educational structure and requirements of the UK. This understanding should be reflected in the content's alignment with the curriculum's objectives and standards.
+Complete Understanding of UK National Curriculum: thoroughly analyze the UK National Curriculum document "The national curriculum in England - Framework document {uk_national_curriculum_content}" to fully grasp the educational structure and requirements of the UK. This understanding should be reflected in the content's alignment with the curriculum's objectives and standards.
 Contextual Analysis of Teacher's Input: Fully comprehend the context of the teacher's request, including the subject, age of students this is targeted to, specific student needs, year group, subject focus, and any special requirements mentioned and also the number of lesson required. Based on all this Produce lesson plan which consists of:  
 1.	Success Criteria: These are the specific standards or goals that students are expected to achieve by the end of the lesson. They should be clear, measurable, and achievable. For instance, "Students will be able to solve linear equations with one variable" is a clear success criterion.
 2.	Learning Intention/Objective: This is a statement that describes what the students will learn or understand by the end of the lesson. It should be focused and aligned with the curriculum standards. Example: "To understand the life cycle of a butterfly."
@@ -194,4 +208,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
