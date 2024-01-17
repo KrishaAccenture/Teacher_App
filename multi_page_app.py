@@ -12,6 +12,19 @@ openai.api_key = st.secrets["api_key"]
 
 import PyPDF2
 
+# Initialize session state variables for history
+if 'history' not in st.session_state:
+    st.session_state['history'] = []
+
+# Function to update history
+def update_history(user_input, lesson_plan, ppt_content, activity_sheet_content):
+    st.session_state['history'].append({
+        'user_input': user_input,
+        'lesson_plan': lesson_plan,
+        'ppt_content': ppt_content,
+        'activity_sheet_content': activity_sheet_content
+    })
+
 # Function to extract text from a PDF file
 def extract_text_from_pdf_with_pypdf2(pdf_path):
     text = ''
@@ -152,6 +165,10 @@ if 'ppt_ready' not in st.session_state:
 def main():
     st.title('Lesson and Presentation Generator')
 
+    # "New Page" functionality
+    if st.button('Start New'):
+        st.experimental_rerun()
+
     # Input fields for user details with placeholders
     subject = st.text_input("Subject", placeholder="Enter Subject")
     year_group = st.text_input("Year Group", placeholder="Enter Year Group")
@@ -165,14 +182,12 @@ def main():
     uploaded_files = st.file_uploader("Upload Supporting Files", accept_multiple_files=True,
                                       type=['pdf', 'docx', 'xlsx', 'csv', 'ppt', 'pptx'])
 
+    # Combine user inputs into a single string
+    user_input = f"Subject: {subject}, Year Group: {year_group}, Lesson Topic: {lesson_topic}, Number of Lessons Required: {number_of_lessons_required}, Ability of Students: {ability_of_students}, Special Education Requirements: {special_education_requirements}, Additional Comments: {additional_comments}"
+
     # Submit button
     if st.button('Click here to generate lesson plan, ppt and activity sheets'):
-        # Combine user inputs into a single string
-        user_input = f"Subject: {subject}, Year Group: {year_group}, Lesson Topic: {lesson_topic}, Number of Lessons Required: {number_of_lessons_required}, Ability of Students: {ability_of_students}, Special Education Requirements: {special_education_requirements}, Additional Comments: {additional_comments}"
-    
-
         with st.spinner('Creating the lesson plan...'):
-              
             lesson_plan = generate_lesson_plan(user_input)
             st.session_state['lesson_plan_file_stream'] = create_word_document(lesson_plan)
 
@@ -185,26 +200,36 @@ def main():
             activity_sheet_content = generate_activity_sheets(lesson_plan, parsed_ppt_content)
             st.session_state['activity_sheet_file_stream'] = create_word_document(activity_sheet_content)
 
+        # Update history with generated content
+        update_history(user_input, lesson_plan, ppt_content, activity_sheet_content)
         st.success('All materials ready for download!')
 
     # Download buttons for lesson plan, presentation, and activity sheets
     if st.session_state['lesson_plan_file_stream'] is not None:
         st.download_button(label="Download Lesson Plan",
-                        data=st.session_state['lesson_plan_file_stream'],
-                        file_name="lesson_plan.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                           data=st.session_state['lesson_plan_file_stream'],
+                           file_name="lesson_plan.docx",
+                           mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
     if st.session_state['ppt_file_stream'] is not None:
         st.download_button(label="Download PowerPoint Presentation",
-                        data=st.session_state['ppt_file_stream'],
-                        file_name="presentation.pptx",
-                        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
+                           data=st.session_state['ppt_file_stream'],
+                           file_name="presentation.pptx",
+                           mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
 
     if st.session_state['activity_sheet_file_stream'] is not None:
         st.download_button(label="Download Activity Sheets",
-                        data=st.session_state['activity_sheet_file_stream'],
-                        file_name="activity_sheets.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                           data=st.session_state['activity_sheet_file_stream'],
+                           file_name="activity_sheets.docx",
+                           mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    
+    # Display history in the sidebar
+    with st.sidebar:
+        st.header("History")
+        for i, entry in enumerate(st.session_state['history']):
+            st.subheader(f"Entry {i + 1}")
+            st.write(f"User Input: {entry['user_input']}")
 
 if __name__ == "__main__":
     main()
+
