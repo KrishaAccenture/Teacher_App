@@ -168,6 +168,17 @@ def show_history_entry_details(index):
     st.download_button("Download PowerPoint", entry['ppt_content'])
     st.download_button("Download Activity Sheets", entry['activity_sheet_content'])
 
+if 'lesson_plan_file_stream' not in st.session_state:
+    st.session_state['lesson_plan_file_stream'] = None
+if 'ppt_file_stream' not in st.session_state:
+    st.session_state['ppt_file_stream'] = None
+if 'activity_sheet_file_stream' not in st.session_state:
+    st.session_state['activity_sheet_file_stream'] = None
+if 'lesson_plan_ready' not in st.session_state:
+    st.session_state['lesson_plan_ready'] = False
+if 'ppt_ready' not in st.session_state:
+    st.session_state['ppt_ready'] = False
+
 # Main function for the Streamlit app
 def main():
     st.title('Lesson and Presentation Generator')
@@ -206,13 +217,15 @@ def main():
         # Update history with generated content
         add_to_history(user_input, lesson_plan, ppt_content, activity_sheet_content)
         st.success('All materials ready for download!')
- 
 
-        # Download buttons for the current session
-        st.download_button("Download Lesson Plan", lesson_plan_file_stream, file_name="lesson_plan.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-        st.download_button("Download PowerPoint", ppt_file_stream, file_name="presentation.pptx", mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
-        st.download_button("Download Activity Sheets", activity_sheet_file_stream, file_name="activity_sheets.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-
+           
+    if st.session_state['lesson_plan_file_stream']:
+        st.download_button("Download Lesson Plan", st.session_state['lesson_plan_file_stream'], file_name="lesson_plan.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    if st.session_state['ppt_file_stream']:
+        st.download_button("Download PowerPoint", st.session_state['ppt_file_stream'], file_name="presentation.pptx", mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
+    if st.session_state['activity_sheet_file_stream']:
+        st.download_button("Download Activity Sheets", st.session_state['activity_sheet_file_stream'], file_name="activity_sheets.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    
     # Display history in the sidebar
     with st.sidebar:
         st.header("History")
