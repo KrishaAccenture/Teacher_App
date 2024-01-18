@@ -6,38 +6,34 @@ from pptx import Presentation
 from pptx.util import Pt as PptPt
 from pptx.dml.color import RGBColor
 import io
-import fitz 
 
 # Initialize the OpenAI API key
-openai.api_key = st.secrets["api_key"]
+openai.api_key = st.secrets["openai_api_key"]
 
 # Initialize session state variables for history
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
 # Function to update history
-def update_history(user_input, lesson_plan, ppt_content, activity_sheet_content, lesson_plan_file_stream, ppt_file_stream, activity_sheet_file_stream):
-    st.session_state['history'].append({
-        'user_input': user_input,
-        'lesson_plan': lesson_plan,
-        'ppt_content': ppt_content,
-        'activity_sheet_content': activity_sheet_content,
-        'lesson_plan_file_stream': lesson_plan_file_stream,
-        'ppt_file_stream': ppt_file_stream,
-        'activity_sheet_file_stream': activity_sheet_file_stream
-    })
+def update_history(session_details):
+    st.session_state['history'].insert(0, session_details)
+
+# Function to generate lesson plan, PowerPoint, and activity sheets
+# Replace this with your actual OpenAI call and document generation
+def generate_materials(user_input):
+    lesson_plan = "Generated lesson plan content"  # Placeholder
+    ppt_content = "Generated PowerPoint content"  # Placeholder
+    activity_sheet_content = "Generated activity sheet content"  # Placeholder
+
+    lesson_plan_file_stream = create_word_document(lesson_plan)
+    ppt_file_stream = create_powerpoint(ppt_content)
+    activity_sheet_file_stream = create_word_document(activity_sheet_content)
+
+    return lesson_plan, lesson_plan_file_stream, ppt_content, ppt_file_stream, activity_sheet_content, activity_sheet_file_stream
 
 # Function to show history entry details
 def show_history_entry_details(entry):
-    st.write(f"Subject: {entry['user_input']['subject']}, Lesson Topic: {entry['user_input']['lesson_topic']}")
-    st.write("Lesson Plan:")
-    st.write(entry['lesson_plan'])
-    st.write("PowerPoint Content:")
-    st.write(entry['ppt_content'])
-    st.write("Activity Sheet Content:")
-    st.write(entry['activity_sheet_content'])
-    
-    # File download functionality tied to history entries
+    st.write(f"Subject: {entry['subject']}, Lesson Topic: {entry['lesson_topic']}")
     st.download_button(label="Download Lesson Plan",
                        data=entry['lesson_plan_file_stream'],
                        file_name="lesson_plan.docx",
@@ -51,123 +47,91 @@ def show_history_entry_details(entry):
                        file_name="activity_sheets.docx",
                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-# Function to create a Word document
-def create_word_document(content):
-    doc = docx.Document()
-    for paragraph in content.split('\n'):
-        p = doc.add_paragraph(paragraph)
-        p.style.font.size = Pt(12)
-    file_stream = io.BytesIO()
-    doc.save(file_stream)
-    file_stream.seek(0)
-    return file_stream
-
-# Function to create a PowerPoint presentation
-def create_powerpoint(ppt_content):
-    prs = Presentation()
-    title_font_size = PptPt(30)
-    content_font_size = PptPt(15)
-    title_font_color = RGBColor(0, 51, 102)  # Dark blue
-    content_font_color = RGBColor(77, 77, 77)  # Gray
-    for slide_info in ppt_content:
-        slide_layout = prs.slide_layouts[1]
-        slide = prs.slides.add_slide(slide_layout)
-        title, content = slide_info['title'], slide_info['content']
-        title_shape = slide.shapes.title
-        title_shape.text = title
-        for paragraph in title_shape.text_frame.paragraphs:
-            paragraph.font.size = title_font_size
-            paragraph.font.bold = True
-            paragraph.font.color.rgb = title_font_color
-        content_box = slide.placeholders[1]
-        content_box.text = content
-        for paragraph in content_box.text_frame.paragraphs:
-            paragraph.font.size = content_font_size
-            paragraph.font.color.rgb = content_font_color
-    file_stream = io.BytesIO()
-    prs.save(file_stream)
-    file_stream.seek(0)
-    return file_stream
-
-# Function to parse the generated content for PowerPoint
-def parse_ppt_content(raw_content):
-    slides = []
-    raw_slides = raw_content.split("\n\n")
-    for raw_slide in raw_slides:
-        lines = raw_slide.strip().split("\n")
-        if len(lines) >= 2:
-            title = lines[0].strip()
-            content = "\n".join(lines[1:])
-            slides.append({'title': title, 'content': content})
-    return slides
-
-# Functions for generating lesson plan, PowerPoint slides, and activity sheets
-# These are placeholders for your own implementation of these functions.
-# They should call the OpenAI API or perform other logic as needed.
-
 # Main app functionality
 def main():
     st.title('Lesson and Presentation Generator')
 
-    # "New Page" functionality
-    if st.button('Start New'):
-        st.session_state['history'] = []
-        st.experimental_rerun()
-
     # Input fields for user details with placeholders
-    subject = st.text_input("Subject", placeholder="Enter Subject")
-    year_group = st.text_input("Year Group", placeholder="Enter Year Group")
-    lesson_topic = st.text_input("Lesson Topic", placeholder="Enter Lesson Topic")
-    number_of_lessons_required = st.number_input("Number of Lessons Required", min_value=1, format="%d")
-    ability_of_students = st.text_input("Ability of Students", placeholder="Enter Ability of Students")
-    special_education_requirements = st.text_area("Special Education Requirements from Children", placeholder="Enter any Special Educational Needs from your Students")
-    additional_comments = st.text_area("Additional Comments", placeholder="Any additional comments")
+    if 'user_input' not in st.session_state:
+        st.session_state.user_input = {
+            'subject': '',
+            'year_group': '',
+            'lesson_topic': '',
+            'number_of_lessons_required': 1,
+            'ability_of_students': '',
+            'special_education_requirements': '',
+            'additional_comments': '',
+            'materials_generated': False
+        }
+
+    subject = st.text_input("Subject", st.session_state.user_input['subject'])
+    year_group = st.text_input("Year Group", st.session_state.user_input['year_group'])
+    lesson_topic = st.text_input("Lesson Topic", st.session_state.user_input['lesson_topic'])
+    number_of_lessons_required = st.number_input("Number of Lessons Required", min_value=1, value=st.session_state.user_input['number_of_lessons_required'])
+    ability_of_students = st.text_input("Ability of Students", st.session_state.user_input['ability_of_students'])
+    special_education_requirements = st.text_area("Special Education Requirements from Children", st.session_state.user_input['special_education_requirements'])
+    additional_comments = st.text_area("Additional Comments", st.session_state.user_input['additional_comments'])
 
     # File uploader (optional for additional inputs)
-    uploaded_files = st.file_uploader("Upload Supporting Files", accept_multiple_files=True,
-                                      type=['pdf', 'docx', 'xlsx', 'csv', 'ppt', 'pptx'])
+    uploaded_files = st.file_uploader("Upload Supporting Files", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'csv', 'ppt', 'pptx'])
 
-    # Combine user inputs into a dictionary
-    user_input = {
-        'subject': subject,
-        'year_group': year_group,
-        'lesson_topic': lesson_topic,
-        'number_of_lessons_required': number_of_lessons_required,
-        'ability_of_students': ability_of_students,
-        'special_education_requirements': special_education_requirements,
-        'additional_comments': additional_comments
-    }
-
-    # Submit button
+    # Submit button to generate materials
     if st.button('Click here to generate lesson plan, ppt, and activity sheets'):
         with st.spinner('Creating the lesson plan...'):
-            # Generate lesson plan content
-            lesson_plan = "Generated lesson plan content"  # Placeholder for actual content
-            lesson_plan_file_stream = create_word_document(lesson_plan)
+            # Save user input in session state
+            st.session_state.user_input = {
+                'subject': subject,
+                'year_group': year_group,
+                'lesson_topic': lesson_topic,
+                'number_of_lessons_required': number_of_lessons_required,
+                'ability_of_students': ability_of_students,
+                'special_education_requirements': special_education_requirements,
+                'additional_comments': additional_comments,
+                'materials_generated': True
+            }
 
-        with st.spinner('Generating the PowerPoint...'):
-            # Generate PowerPoint slides content
-            ppt_content = "Generated PowerPoint slides content"  # Placeholder for actual content
-            parsed_ppt_content = parse_ppt_content(ppt_content)
-            ppt_file_stream = create_powerpoint(parsed_ppt_content)
+            # Generate materials
+            materials = generate_materials(st.session_state.user_input)
+            
+            # Update history with the new entry
+            update_history({
+                'subject': subject,
+                'year_group': year_group,
+                'lesson_topic': lesson_topic,
+                'lesson_plan': materials[0],
+                'lesson_plan_file_stream': materials[1],
+                'ppt_content': materials[2],
+                'ppt_file_stream': materials[3],
+                'activity_sheet_content': materials[4],
+                'activity_sheet_file_stream': materials[5]
+            })
+            
+            st.success('Materials ready for download!')
+    
+    # Show generated materials if available
+    if st.session_state.user_input['materials_generated']:
+        show_history_entry_details(st.session_state.history[0])
 
-        with st.spinner('Creating the activity sheets...'):
-            # Generate activity sheets content
-            activity_sheet_content = "Generated activity sheets content"  # Placeholder for actual content
-            activity_sheet_file_stream = create_word_document(activity_sheet_content)
-
-        # Update history with generated content
-        update_history(user_input, lesson_plan, ppt_content, activity_sheet_content, lesson_plan_file_stream, ppt_file_stream, activity_sheet_file_stream)
-        st.success('All materials ready for download!')
-
-# Display history in the sidebar
+# Sidebar history functionality
 def display_sidebar_history():
     with st.sidebar:
         st.header("History")
+        if st.button('Start New', key='new_chat'):
+            # Reset the session state for user input
+            st.session_state.user_input = {
+                'subject': '',
+                'year_group': '',
+                'lesson_topic': '',
+                'number_of_lessons_required': 1,
+                'ability_of_students': '',
+                'special_education_requirements': '',
+                'additional_comments': '',
+                'materials_generated': False
+            }
+            st.experimental_rerun()
+        
         for i, entry in enumerate(st.session_state['history']):
-            subj = entry['user_input']['subject']
-            topic = entry['user_input']['lesson_topic']
-            if st.button(f"{subj} - {topic}", key=f"history_btn_{i}"):
+            if st.button(f"{entry['subject']} - {entry['lesson_topic']}", key=f"history_btn_{i}"):
                 show_history_entry_details(entry)
 
 # Run the sidebar and main functions
