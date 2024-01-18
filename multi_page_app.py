@@ -48,22 +48,35 @@ def create_word_document(content):
     return doc_stream
 
 # Function to create a PowerPoint presentation
+# Function to create a PowerPoint presentation
 def create_powerpoint(slides_content):
     prs = Presentation()
     for slide_content in slides_content:
         slide_layout = prs.slide_layouts[5]  # Using a title and content layout
         slide = prs.slides.add_slide(slide_layout)
-        title = slide.shapes.title
-        title.text = slide_content['title']
-        content = slide.placeholders[1]
-        txBox = content.text_frame
-        p = txBox.add_paragraph()
+        
+        # Set the title for the slide
+        title_shape = slide.shapes.title
+        title_shape.text = slide_content['title']
+        
+        # Create a textbox for the content
+        left = Inches(1)
+        top = Inches(1.5)
+        width = Inches(8.25)
+        height = Inches(5.5)
+        txBox = slide.shapes.add_textbox(left, top, width, height)
+        tf = txBox.text_frame
+        p = tf.add_paragraph()
         p.text = slide_content['content']
-        p.level = 0
+        p.font.size = PptPt(12)
+        p.font.bold = True
+        p.alignment = PP_ALIGN.LEFT
+        
     prs_stream = io.BytesIO()
     prs.save(prs_stream)
     prs_stream.seek(0)
     return prs_stream
+
 
 # Main app functionality
 def main():
