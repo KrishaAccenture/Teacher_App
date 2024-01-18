@@ -154,12 +154,23 @@ def show_history_entry_details(index):
 def main():
     st.title('Lesson and Presentation Generator')
 
-    # Input fields
-    subject = st.text_input("Subject")
-    year_group = st.text_input("Year Group")
-    lesson_topic = st.text_input("Lesson Topic")
-    user_input = f"Subject: {subject}, Year Group: {year_group}, Lesson Topic: {lesson_topic}"
+    # Input fields for user details with placeholders
+    subject = st.text_input("Subject", placeholder="Enter Subject")
+    year_group = st.text_input("Year Group", placeholder="Enter Year Group")
+    lesson_topic = st.text_input("Lesson Topic", placeholder="Enter Lesson Topic")
+    number_of_lessons_required = st.number_input("Number of Lessons Required", min_value=0, format="%d")
+    ability_of_students = st.text_input("Ability of Students", placeholder="Enter Ability of Students")
+    special_education_requirements = st.text_area("Special Education Requirements from Children", placeholder="Enter any Special Educational Needs from your Students")
+    additional_comments = st.text_area("Additional Comments", placeholder="Any additional comments")
 
+    # File uploader (optional for additional inputs)
+    uploaded_files = st.file_uploader("Upload Supporting Files", accept_multiple_files=True,
+                                      type=['pdf', 'docx', 'xlsx', 'csv', 'ppt', 'pptx'])
+
+    # Combine user inputs into a single string
+    user_input = f"Subject: {subject}, Year Group: {year_group}, Lesson Topic: {lesson_topic}, Number of Lessons Required: {number_of_lessons_required}, Ability of Students: {ability_of_students}, Special Education Requirements: {special_education_requirements}, Additional Comments: {additional_comments}"
+
+     
     if st.button('Generate Materials'):
         with st.spinner('Generating materials...'):
             lesson_plan = generate_lesson_plan(user_input)
