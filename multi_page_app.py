@@ -188,26 +188,30 @@ def main():
     # Combine user inputs into a single string
     user_input = f"Subject: {subject}, Year Group: {year_group}, Lesson Topic: {lesson_topic}, Number of Lessons Required: {number_of_lessons_required}, Ability of Students: {ability_of_students}, Special Education Requirements: {special_education_requirements}, Additional Comments: {additional_comments}"
 
-     
-    if st.button('Generate Materials'):
-        with st.spinner('Generating materials...'):
+    # Submit button
+    if st.button('Click here to generate lesson plan, ppt, and activity sheets'):
+        with st.spinner('Creating the lesson plan...'):
             lesson_plan = generate_lesson_plan(user_input)
+            st.session_state['lesson_plan_file_stream'] = create_word_document(lesson_plan)
+    
+        with st.spinner('Generating the PowerPoint...'):
             ppt_content = generate_ppt_slides(lesson_plan)
-            activity_sheet_content = generate_activity_sheets(lesson_plan, ppt_content)
+            parsed_ppt_content = parse_ppt_content(ppt_content)
+            st.session_state['ppt_file_stream'] = create_powerpoint(parsed_ppt_content)
+    
+        with st.spinner('Creating the activity sheets...'):
+            activity_sheet_content = generate_activity_sheets(lesson_plan, parsed_ppt_content)
+            st.session_state['activity_sheet_file_stream'] = create_word_document(activity_sheet_content)
+    
+        # Update history with generated content
+        add_to_history(user_input, lesson_plan, ppt_content, activity_sheet_content)
+        st.success('All materials ready for download!')
+ 
 
-            lesson_plan_file_stream = create_word_document(lesson_plan)
-            ppt_file_stream = create_powerpoint(ppt_content)
-            activity_sheet_file_stream = create_word_document(activity_sheet_content)
-
-            # Add to history
-            add_to_history(user_input, lesson_plan_file_stream, ppt_file_stream, activity_sheet_file_stream)
-
-            st.success('Materials generated successfully!')
-
-            # Download buttons for the current session
-            st.download_button("Download Lesson Plan", lesson_plan_file_stream, file_name="lesson_plan.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            st.download_button("Download PowerPoint", ppt_file_stream, file_name="presentation.pptx", mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
-            st.download_button("Download Activity Sheets", activity_sheet_file_stream, file_name="activity_sheets.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        # Download buttons for the current session
+        st.download_button("Download Lesson Plan", lesson_plan_file_stream, file_name="lesson_plan.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        st.download_button("Download PowerPoint", ppt_file_stream, file_name="presentation.pptx", mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
+        st.download_button("Download Activity Sheets", activity_sheet_file_stream, file_name="activity_sheets.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
     # Display history in the sidebar
     with st.sidebar:
