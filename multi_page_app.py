@@ -85,14 +85,31 @@ def create_powerpoint(ppt_content):
     content_font_size = PptPt(15)
     title_font_color = RGBColor(0, 51, 102)
     content_font_color = RGBColor(77, 77, 77)
-    
-    for slide_info in ppt_content:
-        slide_layout = prs.slide_layouts[1]  # Assuming layout 1 is suitable
+
+    # Check if ppt_content is a list of dictionaries or a string
+    if isinstance(ppt_content, str):
+        # If it's a string, split it into slides based on a delimiter
+        slides = ppt_content.split("Slide Delimiter")  # Replace with actual delimiter
+    elif isinstance(ppt_content, list):
+        slides = ppt_content
+    else:
+        raise ValueError("ppt_content format is not supported")
+
+    for slide_info in slides:
+        slide_layout = prs.slide_layouts[1]
         slide = prs.slides.add_slide(slide_layout)
-        
-        # Check if title and content exist in slide_info
-        title, content = slide_info.get('title', ''), slide_info.get('content', '')
-        
+
+        # Extract title and content based on the format of slide_info
+        if isinstance(slide_info, dict):
+            title, content = slide_info.get('title', ''), slide_info.get('content', '')
+        elif isinstance(slide_info, str):
+            # Assuming the title and content in string are separated by a newline
+            parts = slide_info.split('\n', 1)
+            title = parts[0] if parts else ''
+            content = parts[1] if len(parts) > 1 else ''
+        else:
+            raise ValueError("slide_info format is not supported")
+
         # Setup Title
         if title:
             title_shape = slide.shapes.title
@@ -101,7 +118,7 @@ def create_powerpoint(ppt_content):
                 paragraph.font.size = title_font_size
                 paragraph.font.bold = True
                 paragraph.font.color.rgb = title_font_color
-        
+
         # Setup Content
         if content:
             content_box = slide.placeholders[1]
@@ -114,6 +131,7 @@ def create_powerpoint(ppt_content):
     prs.save(file_stream)
     file_stream.seek(0)
     return file_stream
+
 
 # Function to generate activity sheets content
 def generate_activity_sheets(lesson_plan, parsed_ppt_content):
