@@ -45,7 +45,7 @@ def create_word_document(content, file_name='document.docx'):
     doc = docx.Document()
     for paragraph in content.split('\n'):
         p = doc.add_paragraph(paragraph)
-        p.style.font.size = Pt(12)
+        p.style.font.size = docx.shared.Pt(12)  # Corrected import here
     file_stream = io.BytesIO()
     doc.save(file_stream)
     file_stream.seek(0)
@@ -83,23 +83,33 @@ def create_powerpoint(ppt_content):
     prs = Presentation()
     title_font_size = PptPt(30)
     content_font_size = PptPt(15)
-    title_font_color = RGBColor(0, 51, 102)  # Dark blue
-    content_font_color = RGBColor(77, 77, 77)  # Gray
+    title_font_color = RGBColor(0, 51, 102)
+    content_font_color = RGBColor(77, 77, 77)
+    
     for slide_info in ppt_content:
-        slide_layout = prs.slide_layouts[1]
+        slide_layout = prs.slide_layouts[1]  # Assuming layout 1 is suitable
         slide = prs.slides.add_slide(slide_layout)
-        title, content = slide_info['title'], slide_info['content']
-        title_shape = slide.shapes.title
-        title_shape.text = title
-        for paragraph in title_shape.text_frame.paragraphs:
-            paragraph.font.size = title_font_size
-            paragraph.font.bold = True
-            paragraph.font.color.rgb = title_font_color
-        content_box = slide.placeholders[1]
-        content_box.text = content
-        for paragraph in content_box.text_frame.paragraphs:
-            paragraph.font.size = content_font_size
-            paragraph.font.color.rgb = content_font_color
+        
+        # Check if title and content exist in slide_info
+        title, content = slide_info.get('title', ''), slide_info.get('content', '')
+        
+        # Setup Title
+        if title:
+            title_shape = slide.shapes.title
+            title_shape.text = title
+            for paragraph in title_shape.text_frame.paragraphs:
+                paragraph.font.size = title_font_size
+                paragraph.font.bold = True
+                paragraph.font.color.rgb = title_font_color
+        
+        # Setup Content
+        if content:
+            content_box = slide.placeholders[1]
+            content_box.text = content
+            for paragraph in content_box.text_frame.paragraphs:
+                paragraph.font.size = content_font_size
+                paragraph.font.color.rgb = content_font_color
+
     file_stream = io.BytesIO()
     prs.save(file_stream)
     file_stream.seek(0)
