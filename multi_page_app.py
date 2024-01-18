@@ -203,29 +203,29 @@ def main():
     if st.button('Click here to generate lesson plan, ppt, and activity sheets'):
         with st.spinner('Creating the lesson plan...'):
             lesson_plan = generate_lesson_plan(user_input)
-            st.session_state['lesson_plan_file_stream'] = create_word_document(lesson_plan)
+            st.session_state.lesson_plan_file_stream = create_word_document(lesson_plan)
     
         with st.spinner('Generating the PowerPoint...'):
             ppt_content = generate_ppt_slides(lesson_plan)
             parsed_ppt_content = parse_ppt_content(ppt_content)
-            st.session_state['ppt_file_stream'] = create_powerpoint(parsed_ppt_content)
+            st.session_state.ppt_file_stream = create_powerpoint(parsed_ppt_content)
     
         with st.spinner('Creating the activity sheets...'):
             activity_sheet_content = generate_activity_sheets(lesson_plan, parsed_ppt_content)
-            st.session_state['activity_sheet_file_stream'] = create_word_document(activity_sheet_content)
+            st.session_state.activity_sheet_file_stream = create_word_document(activity_sheet_content)
     
         # Update history with generated content
         add_to_history(user_input, lesson_plan, ppt_content, activity_sheet_content)
         st.success('All materials ready for download!')
 
-           
-    if st.session_state['lesson_plan_file_stream']:
-        st.download_button("Download Lesson Plan", st.session_state['lesson_plan_file_stream'], file_name="lesson_plan.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-    if st.session_state['ppt_file_stream']:
-        st.download_button("Download PowerPoint", st.session_state['ppt_file_stream'], file_name="presentation.pptx", mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
-    if st.session_state['activity_sheet_file_stream']:
-        st.download_button("Download Activity Sheets", st.session_state['activity_sheet_file_stream'], file_name="activity_sheets.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-    
+    # Download buttons
+    if st.session_state.get('lesson_plan_file_stream'):
+        st.download_button("Download Lesson Plan", st.session_state.lesson_plan_file_stream, file_name="lesson_plan.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    if st.session_state.get('ppt_file_stream'):
+        st.download_button("Download PowerPoint", st.session_state.ppt_file_stream, file_name="presentation.pptx", mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
+    if st.session_state.get('activity_sheet_file_stream'):
+        st.download_button("Download Activity Sheets", st.session_state.activity_sheet_file_stream, file_name="activity_sheets.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
     # Display history in the sidebar
     with st.sidebar:
         st.header("History")
