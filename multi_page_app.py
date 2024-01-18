@@ -8,7 +8,7 @@ from pptx.dml.color import RGBColor
 import io
 
 # Initialize the OpenAI API key
-openai.api_key = st.secrets["openai_api_key"]
+openai.api_key = st.secrets["api_key"]
 
 # Initialize session state variables for history
 if 'history' not in st.session_state:
