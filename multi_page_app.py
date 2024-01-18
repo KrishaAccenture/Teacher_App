@@ -8,7 +8,7 @@ from pptx.dml.color import RGBColor
 import io
 
 # Initialize the OpenAI API key
-openai.api_key = st.secrets["api_key"]
+openai.api_key = st.secrets["openai_api_key"]
 
 # Initialize session state variables for history
 if 'history' not in st.session_state:
@@ -18,22 +18,10 @@ if 'history' not in st.session_state:
 def update_history(session_details):
     st.session_state['history'].insert(0, session_details)
 
-# Function to generate lesson plan, PowerPoint, and activity sheets
-# Replace this with your actual OpenAI call and document generation
-def generate_materials(user_input):
-    lesson_plan = "Generated lesson plan content"  # Placeholder
-    ppt_content = "Generated PowerPoint content"  # Placeholder
-    activity_sheet_content = "Generated activity sheet content"  # Placeholder
-
-    lesson_plan_file_stream = create_word_document(lesson_plan)
-    ppt_file_stream = create_powerpoint(ppt_content)
-    activity_sheet_file_stream = create_word_document(activity_sheet_content)
-
-    return lesson_plan, lesson_plan_file_stream, ppt_content, ppt_file_stream, activity_sheet_content, activity_sheet_file_stream
-
 # Function to show history entry details
-def show_history_entry_details(entry):
-    st.write(f"Subject: {entry['subject']}, Lesson Topic: {entry['lesson_topic']}")
+def show_history_entry_details(entry_index):
+    entry = st.session_state['history'][entry_index]
+    st.write(f"Subject: {entry['user_input']['subject']}, Lesson Topic: {entry['user_input']['lesson_topic']}")
     st.download_button(label="Download Lesson Plan",
                        data=entry['lesson_plan_file_stream'],
                        file_name="lesson_plan.docx",
@@ -47,30 +35,55 @@ def show_history_entry_details(entry):
                        file_name="activity_sheets.docx",
                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
+# Function to reset user inputs
+def reset_user_inputs():
+    st.session_state.user_input = {
+        'subject': '',
+        'year_group': '',
+        'lesson_topic': '',
+        'number_of_lessons_required': 1,
+        'ability_of_students': '',
+        'special_education_requirements': '',
+        'additional_comments': '',
+        'materials_generated': False
+    }
+
+# Function to create a Word document
+def create_word_document(content):
+    # Your code to create a word document from the content
+    pass
+
+# Function to create a PowerPoint presentation
+def create_powerpoint(content):
+    # Your code to create a PowerPoint presentation from the content
+    pass
+
+# Sidebar history functionality
+def display_sidebar_history():
+    with st.sidebar:
+        st.header("History")
+        if st.button('Start New', key='new_chat'):
+            reset_user_inputs()
+            st.experimental_rerun()
+        
+        for i, entry in enumerate(st.session_state['history']):
+            if st.button(f"{entry['user_input']['subject']} - {entry['user_input']['lesson_topic']}", key=f"history_btn_{i}"):
+                show_history_entry_details(i)
+
 # Main app functionality
 def main():
     st.title('Lesson and Presentation Generator')
 
-    # Input fields for user details with placeholders
-    if 'user_input' not in st.session_state:
-        st.session_state.user_input = {
-            'subject': '',
-            'year_group': '',
-            'lesson_topic': '',
-            'number_of_lessons_required': 1,
-            'ability_of_students': '',
-            'special_education_requirements': '',
-            'additional_comments': '',
-            'materials_generated': False
-        }
-
-    subject = st.text_input("Subject", st.session_state.user_input['subject'])
-    year_group = st.text_input("Year Group", st.session_state.user_input['year_group'])
-    lesson_topic = st.text_input("Lesson Topic", st.session_state.user_input['lesson_topic'])
-    number_of_lessons_required = st.number_input("Number of Lessons Required", min_value=1, value=st.session_state.user_input['number_of_lessons_required'])
-    ability_of_students = st.text_input("Ability of Students", st.session_state.user_input['ability_of_students'])
-    special_education_requirements = st.text_area("Special Education Requirements from Children", st.session_state.user_input['special_education_requirements'])
-    additional_comments = st.text_area("Additional Comments", st.session_state.user_input['additional_comments'])
+    # Define user input variables
+    user_input = {
+        'subject': st.text_input("Subject", value=""),
+        'year_group': st.text_input("Year Group", value=""),
+        'lesson_topic': st.text_input("Lesson Topic", value=""),
+        'number_of_lessons_required': st.number_input("Number of Lessons Required", min_value=1, value=1),
+        'ability_of_students': st.text_input("Ability of Students", value=""),
+        'special_education_requirements': st.text_area("Special Education Requirements from Children", value=""),
+        'additional_comments': st.text_area("Additional Comments", value=""),
+    }
 
     # File uploader (optional for additional inputs)
     uploaded_files = st.file_uploader("Upload Supporting Files", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'csv', 'ppt', 'pptx'])
@@ -78,61 +91,34 @@ def main():
     # Submit button to generate materials
     if st.button('Click here to generate lesson plan, ppt, and activity sheets'):
         with st.spinner('Creating the lesson plan...'):
-            # Save user input in session state
-            st.session_state.user_input = {
-                'subject': subject,
-                'year_group': year_group,
-                'lesson_topic': lesson_topic,
-                'number_of_lessons_required': number_of_lessons_required,
-                'ability_of_students': ability_of_students,
-                'special_education_requirements': special_education_requirements,
-                'additional_comments': additional_comments,
-                'materials_generated': True
-            }
-
-            # Generate materials
-            materials = generate_materials(st.session_state.user_input)
+            # Your code to generate lesson plan content
+            lesson_plan = "Generated lesson plan content"  # Placeholder
+            lesson_plan_file_stream = create_word_document(lesson_plan)
+            
+            # Your code to generate PowerPoint slides content
+            ppt_content = "Generated PowerPoint content"  # Placeholder
+            ppt_file_stream = create_powerpoint(ppt_content)
+            
+            # Your code to generate activity sheets content
+            activity_sheet_content = "Generated activity sheet content"  # Placeholder
+            activity_sheet_file_stream = create_word_document(activity_sheet_content)
             
             # Update history with the new entry
             update_history({
-                'subject': subject,
-                'year_group': year_group,
-                'lesson_topic': lesson_topic,
-                'lesson_plan': materials[0],
-                'lesson_plan_file_stream': materials[1],
-                'ppt_content': materials[2],
-                'ppt_file_stream': materials[3],
-                'activity_sheet_content': materials[4],
-                'activity_sheet_file_stream': materials[5]
+                'user_input': user_input,
+                'lesson_plan': lesson_plan,
+                'lesson_plan_file_stream': lesson_plan_file_stream,
+                'ppt_content': ppt_content,
+                'ppt_file_stream': ppt_file_stream,
+                'activity_sheet_content': activity_sheet_content,
+                'activity_sheet_file_stream': activity_sheet_file_stream
             })
             
             st.success('Materials ready for download!')
-    
-    # Show generated materials if available
-    if st.session_state.user_input['materials_generated']:
-        show_history_entry_details(st.session_state.history[0])
 
-# Sidebar history functionality
-def display_sidebar_history():
-    with st.sidebar:
-        st.header("History")
-        if st.button('Start New', key='new_chat'):
-            # Reset the session state for user input
-            st.session_state.user_input = {
-                'subject': '',
-                'year_group': '',
-                'lesson_topic': '',
-                'number_of_lessons_required': 1,
-                'ability_of_students': '',
-                'special_education_requirements': '',
-                'additional_comments': '',
-                'materials_generated': False
-            }
-            st.experimental_rerun()
-        
-        for i, entry in enumerate(st.session_state['history']):
-            if st.button(f"{entry['subject']} - {entry['lesson_topic']}", key=f"history_btn_{i}"):
-                show_history_entry_details(entry)
+    # Check if materials are generated and ready for download
+    if 'materials_generated' in st.session_state and st.session_state['materials_generated']:
+        show_history_entry_details(0)
 
 # Run the sidebar and main functions
 if __name__ == "__main__":
