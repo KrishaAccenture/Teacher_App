@@ -220,14 +220,14 @@ def main():
         st.success('All materials ready for download!')
 
     def show_history_entry_details(entry):
-    st.write(f"Subject: {entry['user_input']['subject']}, Lesson Topic: {entry['user_input']['lesson_topic']}")
-    # Display the details of the entry
-    st.write("Lesson Plan:")
-    st.write(entry['lesson_plan'])
-    st.write("PowerPoint Content:")
-    st.write(entry['ppt_content'])
-    st.write("Activity Sheet Content:")
-    st.write(entry['activity_sheet_content'])
+        st.write(f"Subject: {entry['user_input']['subject']}, Lesson Topic: {entry['user_input']['lesson_topic']}")
+        # Display the details of the entry
+        st.write("Lesson Plan:")
+        st.write(entry['lesson_plan'])
+        st.write("PowerPoint Content:")
+        st.write(entry['ppt_content'])
+        st.write("Activity Sheet Content:")
+        st.write(entry['activity_sheet_content'])
     
     # If you have file download functionality tied to history entries, add it here
     if 'lesson_plan_file_stream' in entry:
