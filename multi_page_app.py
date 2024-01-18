@@ -16,6 +16,10 @@ openai.api_key = st.secrets["api_key"]
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
+def show_history_entry_details(entry):
+    st.write(f"Subject: {entry['user_input']['subject']}, Lesson Topic: {entry['user_input']['lesson_topic']}")
+    
+
 # Function to update history
 def update_history(user_input, lesson_plan, ppt_content, activity_sheet_content):
     st.session_state['history'].append({
@@ -145,16 +149,6 @@ def generate_activity_sheets(lesson_plan, parsed_ppt_content):
     messages = chat_completion['choices'][0]['message']['content']
     return messages
 
-def create_word_document(content, file_name='activity_sheets.docx'):
-    doc = docx.Document()
-    for paragraph in content.split('\n'):
-        p = doc.add_paragraph(paragraph)
-        p.style.font.size = Pt(12)
-    file_stream = io.BytesIO()
-    doc.save(file_stream)
-    file_stream.seek(0)
-    return file_stream
-
 # Initialize session state variables
 if 'lesson_plan_file_stream' not in st.session_state:
     st.session_state['lesson_plan_file_stream'] = None
@@ -176,7 +170,17 @@ def main():
 
     # "New Page" functionality
     if st.button('Start New'):
+        st.session_state['history'] = []
         st.experimental_rerun()
+
+    # Display concise history entries
+    for i, entry in enumerate(st.session_state['history']):
+        # Each button has a unique key based on its index in the history list
+        subj = entry['user_input']['subject']
+        topic = entry['user_input']['lesson_topic']
+        if st.button(f"{subj} - {topic}", key=f"history_btn_{i}"):
+            # This will display the history entry details and any associated download buttons
+            show_history_entry_details(entry)
 
     # Input fields for user details with placeholders
     subject = st.text_input("Subject", placeholder="Enter Subject")
@@ -194,6 +198,8 @@ def main():
     # Combine user inputs into a single string
     user_input = f"Subject: {subject}, Year Group: {year_group}, Lesson Topic: {lesson_topic}, Number of Lessons Required: {number_of_lessons_required}, Ability of Students: {ability_of_students}, Special Education Requirements: {special_education_requirements}, Additional Comments: {additional_comments}"
 
+     
+    
     # Submit button
     if st.button('Click here to generate lesson plan, ppt and activity sheets'):
         with st.spinner('Creating the lesson plan...'):
@@ -213,31 +219,61 @@ def main():
         update_history(user_input, lesson_plan, ppt_content, activity_sheet_content)
         st.success('All materials ready for download!')
 
-    # Download buttons for lesson plan, presentation, and activity sheets
-    if st.session_state['lesson_plan_file_stream'] is not None:
+    def show_history_entry_details(entry):
+    st.write(f"Subject: {entry['user_input']['subject']}, Lesson Topic: {entry['user_input']['lesson_topic']}")
+    # Display the details of the entry
+    st.write("Lesson Plan:")
+    st.write(entry['lesson_plan'])
+    st.write("PowerPoint Content:")
+    st.write(entry['ppt_content'])
+    st.write("Activity Sheet Content:")
+    st.write(entry['activity_sheet_content'])
+    
+    # If you have file download functionality tied to history entries, add it here
+    if 'lesson_plan_file_stream' in entry:
         st.download_button(label="Download Lesson Plan",
-                           data=st.session_state['lesson_plan_file_stream'],
+                           data=entry['lesson_plan_file_stream'],
                            file_name="lesson_plan.docx",
                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-    if st.session_state['ppt_file_stream'] is not None:
+    if 'ppt_file_stream' in entry:
         st.download_button(label="Download PowerPoint Presentation",
-                           data=st.session_state['ppt_file_stream'],
+                           data=entry['ppt_file_stream'],
                            file_name="presentation.pptx",
                            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation")
 
-    if st.session_state['activity_sheet_file_stream'] is not None:
+    if 'activity_sheet_file_stream' in entry:
         st.download_button(label="Download Activity Sheets",
-                           data=st.session_state['activity_sheet_file_stream'],
+                           data=entry['activity_sheet_file_stream'],
                            file_name="activity_sheets.docx",
                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-    
-    # Display history in the sidebar
+
+# Function to update history
+def update_history(user_input, lesson_plan, ppt_content, activity_sheet_content):
+    st.session_state['history'].append({
+        'user_input': user_input,
+        'lesson_plan': lesson_plan,
+        'ppt_content': ppt_content,
+        'activity_sheet_content': activity_sheet_content,
+        'lesson_plan_file_stream': create_word_document(lesson_plan),
+        'ppt_file_stream': create_powerpoint(parse_ppt_content(ppt_content)),
+        'activity_sheet_file_stream': create_word_document(activity_sheet_content)
+    })
+
+def display_sidebar_history():
     with st.sidebar:
         st.header("History")
-        for i, entry in enumerate(st.session_state['history']):
-            st.subheader(f"Entry {i + 1}")
-            st.write(f"User Input: {entry['user_input']}")
+        if st.button('Start New'):
+            st.session_state['history'] = []
+            st.experimental_rerun()
 
+        for i, entry in enumerate(st.session_state['history']):
+            subj = entry['user_input']['subject']
+            topic = entry['user_input']['lesson_topic']
+            if st.button(f"{subj} - {topic}", key=f"history_btn_{i}"):
+                show_history_entry_details(entry)
+
+# Run the sidebar and main functions
 if __name__ == "__main__":
+    display_sidebar_history()
     main()
